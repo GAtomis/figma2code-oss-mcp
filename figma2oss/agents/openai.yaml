@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figma to OSS"
+  short_description: "Publish Figma assets to OSS/CDN"
+  default_prompt: "Use $figma2oss to inspect the target Figma node, prefer MCP tools whose service name contains figma2oss, upload publishable assets, and return the CDN mapping."

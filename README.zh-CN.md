@@ -79,7 +79,7 @@ npm start
 ```json
 {
   "mcpServers": {
-    "asset-cdn": {
+    "figma2oss": {
       "command": "node",
       "args": ["dist/server.js"],
       "cwd": "/绝对路径/figma2code-oss-mcp"
@@ -87,6 +87,53 @@ npm start
   }
 }
 ```
+
+## 与 skill 配合调用
+
+这个服务就是为 `$figma2oss` 这类 Figma 资源发布 skill 设计的，推荐和 `$figma` 一起配合使用。
+
+推荐调用链路：
+
+1. 用 `$figma` 读取目标节点，拿到 Figma MCP 返回的资源 URL 或资源数据。
+2. 用 `$figma2oss` 调这个 MCP 服务上传可发布资源。
+3. 如果任务还包括代码落地，再把代码交给 `process_code_assets`，使用返回的 `rewrittenCode` 作为最终结果。
+
+提示词示例：
+
+- `Use $figma2oss to upload the icons from this selected Figma node and return the CDN mapping.`
+- `Use $figma $figma2oss to inspect this frame, export the publishable assets, and return source-to-CDN URLs.`
+- `Use $figma2oss with svgFallbackMode=always-inline so SVG stays inline and PNG goes to CDN.`
+
+skill 侧推荐约定：
+
+- 优先选择服务名包含 `figma2oss` 的 MCP 工具。
+- 如果 Figma 返回的是 localhost 资源 URL，直接把这些 URL 传给 `upload_asset`、`batch_upload_assets` 或 `process_code_assets`。
+- 如果希望 SVG 永远不上传，直接调用 `process_code_assets` 并传 `svgFallbackMode=always-inline`。
+
+## MCP 服务建立规范
+
+为了让 skill、MCP 配置和运行时行为保持一致，建议按下面的规范建立服务：
+
+- 服务名要稳定，并且直接表达职责。
+- 这个项目推荐统一使用 `figma2oss` 作为 MCP 服务名。
+- 以下位置尽量保持同名：
+  - MCP 客户端配置中的服务 id
+  - skill 文档里的默认服务名
+  - agent 默认 prompt
+  - README / 故障排查文档
+
+推荐组合：
+
+- 服务名：`figma2oss`
+- skill 名：`$figma2oss`
+- prompt 描述：`prefer MCP tools whose service name contains figma2oss`
+
+如果你后续改了 MCP 服务名，至少同步以下几处：
+
+1. MCP 客户端配置。
+2. skill 文档和 agent 默认 prompt。
+3. 任何依赖旧工具前缀的自动化逻辑。
+4. 如果已有多人或多 agent 在用旧名字，迁移期最好保留一个兼容别名。
 
 ## 工具说明
 
@@ -173,7 +220,9 @@ MCP 配置里优先用 `node dist/server.js`，不要用 `pnpm dev`，避免 std
 
 ### 2. 提示 unknown MCP server
 
-检查 MCP 名称是否与调用时完全一致，例如统一用 `asset-cdn`。
+检查 MCP 名称是否与调用时完全一致，例如统一用 `figma2oss`。
+
+如果 skill 或 prompt 里要求优先匹配服务名包含 `figma2oss` 的工具，但客户端配置里仍然注册成别的名字，就可能出现匹配不到或行为不一致。
 
 ### 3. SVG 外链能下载但浏览器显示破图
 

@@ -7,7 +7,7 @@ MCP server for Figma-to-code workflows with asset upload and URL rewriting.
 - Support resilient SVG handling with probe + inline fallback
 - Integrate with Codex/other MCP clients through STDIO
 
-> Chinese docs: [README.zh-CN.md](README.zh-CN.md)
+> Chinese docs: [简体中文.md](README.zh-CN.md)
 
 ## Features
 
@@ -79,7 +79,7 @@ Example JSON:
 ```json
 {
 	"mcpServers": {
-		"asset-cdn": {
+		"figma2oss": {
 			"command": "node",
 			"args": ["dist/server.js"],
 			"cwd": "/absolute/path/to/figma2code-oss-mcp"
@@ -87,6 +87,53 @@ Example JSON:
 	}
 }
 ```
+
+## Skill Integration
+
+This server is designed to work well with a Figma asset-export skill such as `$figma2oss`.
+
+Recommended composition:
+
+1. Use `$figma` to inspect the target node and collect asset URLs from the Figma MCP response.
+2. Use `$figma2oss` to upload publishable assets through this MCP server.
+3. If the task also includes code generation, pass the generated code to `process_code_assets` and use `rewrittenCode` as the final result.
+
+Prompt examples:
+
+- `Use $figma2oss to upload the icons from this selected Figma node and return the CDN mapping.`
+- `Use $figma $figma2oss to inspect this frame, export the publishable assets, and return source-to-CDN URLs.`
+- `Use $figma2oss with svgFallbackMode=always-inline so SVG stays inline and PNG goes to CDN.`
+
+Recommended MCP usage pattern from a skill:
+
+- Prefer tools exposed under an MCP service name containing `figma2oss`.
+- If the Figma response returns localhost asset URLs, pass those URLs directly to `upload_asset`, `batch_upload_assets`, or `process_code_assets`.
+- If SVG should never be uploaded, call `process_code_assets` with `svgFallbackMode=always-inline`.
+
+## MCP Service Naming Convention
+
+To keep skill prompts, MCP config, and runtime behavior aligned, follow these naming rules:
+
+- Use a stable service id that matches the responsibility of the server.
+- For this project, the recommended MCP service id is `figma2oss`.
+- Keep the service id consistent across:
+	- MCP client config
+	- skill documentation
+	- agent default prompts
+	- troubleshooting docs
+
+Recommended:
+
+- service id: `figma2oss`
+- skill name: `$figma2oss`
+- prompt wording: `prefer MCP tools whose service name contains figma2oss`
+
+If you rename the MCP service:
+
+1. Update the MCP client config.
+2. Update any skill docs or agent prompts that mention the old server id.
+3. If your automation depends on exact tool prefixes, update those references too.
+4. Prefer keeping a backward-compatible alias during migration if multiple users or agents already depend on the old name.
 
 ## Tools
 
@@ -173,7 +220,9 @@ Use `node dist/server.js` in MCP config, not `pnpm dev`, to avoid startup banner
 
 ### 2) Unknown MCP server name
 
-Ensure exact server id in client config and prompt, for example `asset-cdn`.
+Ensure exact server id in client config and prompt, for example `figma2oss`.
+
+If your skill or prompt prefers a service name containing `figma2oss`, but the client config still registers the server under another id, tool selection may fail or become inconsistent.
 
 ### 3) SVG appears broken in browser
 
