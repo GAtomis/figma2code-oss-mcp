@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "asset-cdn": {
+      "command": "node",
+      "args": ["dist/server.js"],
+      "env": {
+        "OSS_REGION": "oss-cn-hangzhou",
+        "OSS_BUCKET": "your-bucket",
+        "OSS_ACCESS_KEY_ID": "your-ak",
+        "OSS_ACCESS_KEY_SECRET": "your-sk",
+        "CDN_BASE_URL": "https://cdn.example.com",
+        "OSS_DEFAULT_PREFIX": "figma-assets"
+      }
+    }
+  }
+}
