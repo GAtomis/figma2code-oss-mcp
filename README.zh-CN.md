@@ -1,5 +1,7 @@
 # figma2code-oss-mcp
 
+英文文档: [README.md](README.md)
+
 用于 Figma 还原代码场景的 MCP 服务，负责资源上传与代码地址改写。
 
 - 支持上传图片/icon 到 OSS 或自定义 HTTP 上传接口

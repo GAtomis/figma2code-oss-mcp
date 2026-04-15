@@ -7,7 +7,7 @@ MCP server for Figma-to-code workflows with asset upload and URL rewriting.
 - Support resilient SVG handling with probe + inline fallback
 - Integrate with Codex/other MCP clients through STDIO
 
-> Chinese docs: see `README.zh-CN.md`.
+> Chinese docs: [README.zh-CN.md](README.zh-CN.md)
 
 ## Features
 
